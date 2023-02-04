@@ -20,7 +20,7 @@ def main():
                 'lepton1': "1lepton.root",
                 'lepton2': "2leptons.root"}
 
-    # channels = ("lepton0", "lepton2")
+    # channels = ["lepton0", "lepton2"]
     channels = ["lepton2"]
     # dataframe_path = "/home/daw/Documents/Physics/Particle phys/Higgs Project/"
 
@@ -31,11 +31,32 @@ def main():
         branches[channel] = uproot.open(file_location + file_name[channel] + ':Nominal')
         # print(branches[channel].show())
         logger.info('Opening finished')
-        qqZZ_mask = branches[channel]['Sample'].array() == "qqZllH125"
-        plt.hist(branches[channel]['MET'].array()[qqZZ_mask],
-                 bins=20, range=(0, 300))
-        plt.xlabel("MET")
-        plt.show()
+        # qqZZ_mask = branches[channel]['Sample'].array() == "qqZllH125"
+        # plt.hist(branches[channel]['Nvtx'].array()[qqZZ_mask],
+        #          bins=20, range=(0, 300))
+        # plt.xlabel("Nvtx")
+        # plt.show()
+
+        for key in branches[channel].keys():
+            if branches[channel].typenames()[key] in ("int32_t", "float"):
+                logger.info("Creating histogram for " + key)
+
+                qqZH_mask = branches[channel]['Sample'].array() == "qqZllH125"
+                plt.hist(branches[channel][key].array()[qqZH_mask], bins = 100, density=True)
+                # plt.xlabel(key)
+                # plt.savefig("histograms/qqZZ " + channel + '_' + key + '.png')
+                # plt.close()
+
+                qqZH_mask = branches[channel]['Sample'].array() == "ggZllH125"
+                plt.hist(branches[channel][key].array()[qqZH_mask], bins=100, density=True)
+                plt.xlabel(key)
+                # plt.savefig("histograms/ggZZ " + channel + '_' + key + '.png')
+                plt.savefig("histograms/lepton2/ggZHvsqqZH/ " + channel + '_' + key + '.png')
+
+                plt.close()
+
+
+
 
 
 
