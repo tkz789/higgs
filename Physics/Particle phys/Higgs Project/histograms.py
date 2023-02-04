@@ -21,7 +21,7 @@ def main():
                 'lepton2': "2leptons.root"}
 
     # channels = ("lepton0", "lepton2")
-    channels = "lepton2"
+    channels = ["lepton2"]
     # dataframe_path = "/home/daw/Documents/Physics/Particle phys/Higgs Project/"
 
     branches = {}
@@ -31,8 +31,9 @@ def main():
         branches[channel] = uproot.open(file_location + file_name[channel] + ':Nominal')
         # print(branches[channel].show())
         logger.info('Opening finished')
-        qqZZ_mask = branches[channel]['Sample'] == "qqZllH125"
-        histogram = plt.hist(branches[channel]['MET'][qqZZ_mask])
+        qqZZ_mask = branches[channel]['Sample'].array() == "qqZllH125"
+        plt.hist(branches[channel]['MET'].array()[qqZZ_mask],
+                 bins=20, range=(0, 300))
         plt.xlabel("MET")
         plt.show()
 
