@@ -21,7 +21,7 @@ def main():
                 'lepton2': "2leptons.root"}
 
     # channels = ["lepton0", "lepton2"]
-    channels = ["lepton2"]
+    channels = ["lepton0"]
     # dataframe_path = "/home/daw/Documents/Physics/Particle phys/Higgs Project/"
 
     branches = {}
@@ -41,8 +41,9 @@ def main():
             if branches[channel].typenames()[key] in ("int32_t", "float"):
                 logger.info("Creating histogram for " + key)
 
-                qqZH_mask = branches[channel]['Sample'].array() == "qqZllH125"
-                qqZH_mask2 = branches[channel]['Sample'].array() == "ggZllH125"
+                # "Sample" and "qqZllH125" for lepton2, "sample" and "qqZvvH124" for lepton0
+                qqZH_mask = branches[channel]['sample'].array() == "qqZvvH125"
+                qqZH_mask2 = branches[channel]['sample'].array() == "ggZvvH125"
                 plt.hist([branches[channel][key].array()[qqZH_mask],
                           branches[channel][key].array()[qqZH_mask2]],
                          bins = 100, density=True)
@@ -52,7 +53,7 @@ def main():
 
                 plt.xlabel(key)
                 # plt.savefig("histograms/ggZZ " + channel + '_' + key + '.png')
-                plt.savefig("histograms/lepton2/ggZHvsqqZH/" + channel + '_' + key + ' comp.png')
+                plt.savefig("histograms/lepton0/ggZHvsqqZH/" + channel + '_' + key + ' comp.png')
 
                 plt.close()
 
