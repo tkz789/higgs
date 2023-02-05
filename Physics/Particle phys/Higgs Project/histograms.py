@@ -42,16 +42,17 @@ def main():
                 logger.info("Creating histogram for " + key)
 
                 qqZH_mask = branches[channel]['Sample'].array() == "qqZllH125"
-                plt.hist(branches[channel][key].array()[qqZH_mask], bins = 100, density=True)
+                qqZH_mask2 = branches[channel]['Sample'].array() == "ggZllH125"
+                plt.hist([branches[channel][key].array()[qqZH_mask],
+                          branches[channel][key].array()[qqZH_mask2]],
+                         bins = 100, density=True)
                 # plt.xlabel(key)
                 # plt.savefig("histograms/qqZZ " + channel + '_' + key + '.png')
                 # plt.close()
 
-                qqZH_mask = branches[channel]['Sample'].array() == "ggZllH125"
-                plt.hist(branches[channel][key].array()[qqZH_mask], bins=100, density=True)
                 plt.xlabel(key)
                 # plt.savefig("histograms/ggZZ " + channel + '_' + key + '.png')
-                plt.savefig("histograms/lepton2/ggZHvsqqZH/ " + channel + '_' + key + '.png')
+                plt.savefig("histograms/lepton2/ggZHvsqqZH/" + channel + '_' + key + ' comp.png')
 
                 plt.close()
 
