@@ -1,7 +1,7 @@
 import uproot
 import matplotlib.pyplot as plt
 import logging
-
+import numpy as np
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ def main():
                 'lepton2': "2leptons.root"}
 
     # channels = ["lepton0", "lepton2"]
-    channels = ["lepton0"]
+    channels = ["lepton2"]
     # dataframe_path = "/home/daw/Documents/Physics/Particle phys/Higgs Project/"
 
     branches = {}
@@ -42,18 +42,22 @@ def main():
                 logger.info("Creating histogram for " + key)
 
                 # "Sample" and "qqZllH125" for lepton2, "sample" and "qqZvvH124" for lepton0
-                qqZH_mask = branches[channel]['sample'].array() == "qqZvvH125"
-                qqZH_mask2 = branches[channel]['sample'].array() == "ggZvvH125"
+                qqZH_mask = branches[channel]['Sample'].array() == "qqZllH125"
+                ggZH_mask = branches[channel]['Sample'].array() == "ggZllH125"
                 plt.hist([branches[channel][key].array()[qqZH_mask],
-                          branches[channel][key].array()[qqZH_mask2]],
-                         bins = 100, density=True)
+                          branches[channel][key].array()[ggZH_mask]],
+                         weights=[branches[channel]['EventWeight'].array()[qqZH_mask],
+                                  branches[channel]['EventWeight'].array()[ggZH_mask]],
+                         bins = 100, density=True,
+                         label=['qqZH','ggZH'])
                 # plt.xlabel(key)
                 # plt.savefig("histograms/qqZZ " + channel + '_' + key + '.png')
                 # plt.close()
 
                 plt.xlabel(key)
+                plt.legend()
                 # plt.savefig("histograms/ggZZ " + channel + '_' + key + '.png')
-                plt.savefig("histograms/lepton0/ggZHvsqqZH/" + channel + '_' + key + ' comp.png')
+                plt.savefig("histograms/"+channel+"/ggZHvsqqZH/weighted" + channel + '_' + key + ' comp.png')
 
                 plt.close()
 
