@@ -21,45 +21,48 @@ def main():
                 'lepton2': "2leptons.root"}
 
     # channels = ["lepton0", "lepton2"]
-    channels = ["lepton2"]
+    channel = "lepton0"
+    sample_name = {"lepton0": "sample", "lepton2": "Sample"}
+    keywords_qq = {"lepton0": "qqZvvH125", "lepton2": "qqZllH125"}
+    keywords_gg = {"lepton0": "ggZvvH125", "lepton2": "ggZllH125"}
+
     # dataframe_path = "/home/daw/Documents/Physics/Particle phys/Higgs Project/"
 
-    branches = {}
+
     # dataframes = {}
-    for channel in channels:
-        logger.info('Opening' + file_name[channel])
-        branches[channel] = uproot.open(file_location + file_name[channel] + ':Nominal')
-        # print(branches[channel].show())
-        logger.info('Opening finished')
-        # qqZZ_mask = branches[channel]['Sample'].array() == "qqZllH125"
-        # plt.hist(branches[channel]['Nvtx'].array()[qqZZ_mask],
-        #          bins=20, range=(0, 300))
-        # plt.xlabel("Nvtx")
-        # plt.show()
+    logger.info('Opening' + file_name[channel])
+    branches = uproot.open(file_location + file_name[channel] + ':Nominal')
+    # print(branches.show())
+    logger.info('Opening finished')
+    # qqZZ_mask = branches['Sample'].array() == "qqZllH125"
+    # plt.hist(branches['Nvtx'].array()[qqZZ_mask],
+    #          bins=20, range=(0, 300))
+    # plt.xlabel("Nvtx")
+    # plt.show()
 
-        for key in branches[channel].keys():
-            if branches[channel].typenames()[key] in ("int32_t", "float"):
-                logger.info("Creating histogram for " + key)
+    for key in branches.keys():
+        if branches.typenames()[key] in ("int32_t", "float"):
+            logger.info("Creating histogram for " + key)
 
-                # "Sample" and "qqZllH125" for lepton2, "sample" and "qqZvvH124" for lepton0
-                qqZH_mask = branches[channel]['Sample'].array() == "qqZllH125"
-                ggZH_mask = branches[channel]['Sample'].array() == "ggZllH125"
-                plt.hist([branches[channel][key].array()[qqZH_mask],
-                          branches[channel][key].array()[ggZH_mask]],
-                         weights=[branches[channel]['EventWeight'].array()[qqZH_mask],
-                                  branches[channel]['EventWeight'].array()[ggZH_mask]],
-                         bins = 100, density=True,
-                         label=['qqZH','ggZH'])
-                # plt.xlabel(key)
-                # plt.savefig("histograms/qqZZ " + channel + '_' + key + '.png')
-                # plt.close()
+            # "Sample" and "qqZllH125" for lepton2, "sample" and "qqZvvH124" for lepton0
+            qqZH_mask = branches[sample_name[channel]].array() == keywords_qq[channel]
+            ggZH_mask = branches[sample_name[channel]].array() == keywords_gg[channel]
+            plt.hist([branches[key].array()[qqZH_mask],
+                      branches[key].array()[ggZH_mask]],
+                     weights=[branches['EventWeight'].array()[qqZH_mask],
+                              branches['EventWeight'].array()[ggZH_mask]],
+                     bins = 100, density=True,
+                     label=['qqZH','ggZH'])
+            # plt.xlabel(key)
+            # plt.savefig("histograms/qqZZ " + channel + '_' + key + '.png')
+            # plt.close()
 
-                plt.xlabel(key)
-                plt.legend()
-                # plt.savefig("histograms/ggZZ " + channel + '_' + key + '.png')
-                plt.savefig("histograms/"+channel+"/ggZHvsqqZH/weighted" + channel + '_' + key + ' comp.png')
+            plt.xlabel(key)
+            plt.legend()
+            # plt.show()
+            plt.savefig("histograms/"+channel+"/ggZHvsqqZH/weighted" + channel + '_' + key + ' comp.png')
 
-                plt.close()
+            plt.close()
 
 
 
