@@ -1,5 +1,6 @@
 import uproot
 import pandas as pd
+import awkward
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -29,7 +30,7 @@ def read_and_pickle(channels=None):
         logger.info('Openieng finished')
 
         logger.info("Converting to pandas dataframe")
-        dataframes = branches.arrays(variables_of_interest + additional_info,library='pd')
+        dataframes = awkward.to_dataframe(branches.arrays(variables_of_interest + additional_info))
         logger.info("Converting finished")
         print(channel + " data frame\n",dataframes.head())
 
