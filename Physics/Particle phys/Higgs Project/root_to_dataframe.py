@@ -20,14 +20,14 @@ def read_and_pickle(channels=None):
 
 
     dataframe_path = "/home/daw/Documents/Physics/Particle phys/Higgs Project/"
-    variables_of_interest = ["pTVH","pTV","ptL1","ptL2",'pTBBJ', 'pTBB', 'nJets', 'mLB','HT',"GSCMvh","etaL1","dRBB", "dPhiLL", "dPhiBBcor", "dEtaVBB"]
+    variables_of_interest = ["pTVH","pTV","ptL1","ptL2",'pTBBJ', 'pTBB', 'nJets','HT',"GSCMvh","etaL1","dRBB", "dPhiLL", "dPhiBB", "dEtaVBB"]
     additional_info = ["EventWeight", "Sample"]
 
     for channel in channels:
         logger.info('Opening' + file_name[channel])
         branches = uproot.open(file_location + file_name[channel] + ':Nominal')
         print(branches.show())
-        logger.info('Openieng finished')
+        logger.info('Opening finished')
 
         logger.info("Converting to pandas dataframe")
         dataframes = awkward.to_dataframe(branches.arrays(variables_of_interest + additional_info))
