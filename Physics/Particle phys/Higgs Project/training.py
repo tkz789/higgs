@@ -3,12 +3,12 @@ import uproot
 import logging
 import numpy
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
 from sklearn.metrics import accuracy_score
 from joblib import dump, load
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+import matplotlib.pyplot as plt
 
 
 # def probability_of_correct_classification(model, val_X, val_y, val_weights):
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 #         if model.predict
 
 def test_model():
-    model = load("first_model.joblib")
+    return load("first_model.joblib")
 
 def main():
     logger.info("Opening file")
@@ -43,14 +43,20 @@ def main():
 
     train_X, val_X, train_y, val_y, train_weights, val_weights = train_test_split(X, y,weights, random_state=1)
 
-    gg_vs_qq_model = DecisionTreeClassifier(random_state=1)
-    gg_vs_qq_model.fit(train_X,train_y, train_weights)
-    dump(gg_vs_qq_model,"first_model.joblib")
+    for depth in [30]:
+        logger.info("Model for max_depth=" +str(depth) )
+        gg_vs_qq_model = DecisionTreeClassifier(random_state=1,  max_leaf_nodes=depth)
+        gg_vs_qq_model.fit(train_X,train_y, train_weights)
+        dump(gg_vs_qq_model,"first_model.joblib")
 
-    validate_predictions = gg_vs_qq_model.predict(val_X)
-    print(validate_predictions.len())
-    print(validate_predictions.sum())
-    print(accuracy_score(val_y, validate_predictions, sample_weight=val_weights))
+        validate_predictions = gg_vs_qq_model.predict(val_X)
+        print(validate_predictions.size)
+        print(validate_predictions.sum())
+        print("Current depth:",depth)
+        print(accuracy_score(val_y, validate_predictions, sample_weight=val_weights))
+        print(export_text(gg_vs_qq_model))
+        plot_tree(gg_vs_qq_model)
+        plt.show()
 
 
 
