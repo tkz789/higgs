@@ -12,8 +12,8 @@ def main():
 
     df = pd.read_pickle("lepton2VOI.pkl")
 
-    df = df.loc[(df["Sample"] == "qqZllH125")|(df["Sample"] == "ggZllH125")]
-    df['is_qqZH'] = df["Sample"] == "qqZllH125"
+    df = df.loc[(df["Sample"] == "qqZllH125")|(df["Sample"] == "ggZllH125")|(df["Sample"] == "ggZllH125cc")|(df["Sample"] == "qqZllH125cc")]
+    df['is_ggZH'] = np.logical_or(df["Sample"] == "ggZllH125", df["Sample"] == "ggZllH125cc")
     print(df)
 
     logger.info("Pickling")

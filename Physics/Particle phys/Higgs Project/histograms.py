@@ -21,7 +21,7 @@ def main():
                 'lepton2': "2leptons.root"}
 
     # channels = ["lepton0", "lepton2"]
-    channel = "lepton0"
+    channel = "lepton2"
     sample_name = {"lepton0": "sample", "lepton2": "Sample"}
     keywords_qq = {"lepton0": "qqZvvH125", "lepton2": "qqZllH125"}
     keywords_gg = {"lepton0": "ggZvvH125", "lepton2": "ggZllH125"}
@@ -51,7 +51,7 @@ def main():
                       branches[key].array()[ggZH_mask]],
                      weights=[branches['EventWeight'].array()[qqZH_mask],
                               branches['EventWeight'].array()[ggZH_mask]],
-                     bins = 100, density=True,
+                     bins = 100, density=False,
                      label=['qqZH','ggZH'])
             # plt.xlabel(key)
             # plt.savefig("histograms/qqZZ " + channel + '_' + key + '.png')
@@ -60,7 +60,7 @@ def main():
             plt.xlabel(key)
             plt.legend()
             # plt.show()
-            plt.savefig("histograms/"+channel+"/ggZHvsqqZH/weighted" + channel + '_' + key + ' comp.png')
+            plt.savefig("histograms/"+channel+"/ggZHvsqqZH/relative" + channel + '_' + key + ' comp.png')
 
             plt.close()
 

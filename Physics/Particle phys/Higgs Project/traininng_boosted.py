@@ -1,10 +1,10 @@
 import pandas as pd
 import uproot
 import logging
-import numpy
+import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, PrecisionRecallDisplay
 from joblib import dump, load
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -43,23 +43,25 @@ def main():
 
     train_X, val_X, train_y, val_y, train_weights, val_weights = train_test_split(X, y,weights, random_state=1)
 
-    for depth in [2,30]:
-        logger.info("Model for max_depth=" +str(depth) )
-        gg_vs_qq_model = DecisionTreeClassifier(random_state=1,  max_leaf_nodes=depth)
+    for estimators in [1]:
+        logger.info("Model for max_depth=" +str(estimators) )
+        gg_vs_qq_model = HistGradientBoostingClassifier(random_state=1, early_stopping=True, learning_rate=0.1)
         gg_vs_qq_model.fit(train_X,train_y, train_weights)
-        dump(gg_vs_qq_model,"first_model.joblib")
+        dump(gg_vs_qq_model,"first_model_boosted.joblib")
 
         predicted_y = gg_vs_qq_model.predict(val_X)
         print(predicted_y.size)
         print(predicted_y.sum())
-        print("Current depth:",depth)
+        print("Current depth:",estimators)
         print(accuracy_score(val_y, predicted_y, sample_weight=val_weights))
-        print(export_text(gg_vs_qq_model, feature_names=variables_of_interest))
-        print(confusion_matrix(val_y, predicted_y, sample_weight=val_weights))
-        plot_tree(gg_vs_qq_model, feature_names=variables_of_interest)
+        print(confusion_matrix(val_y,predicted_y,sample_weight=val_weights))
+        print("precision",precision_score(val_y,predicted_y,sample_weight=val_weights))
+        display = PrecisionRecallDisplay.from_estimator(gg_vs_qq_model, val_X, val_y, name="Boosted", sample_weight=val_weights, pos_label=True)
+        display.plot()
         plt.show()
 
-
+        print("False positive:",)
+        print("False negative:",1-np.sum(np.logical_not(np.logical_or(predicted_y,val_y)))/(predicted_y.size-sum(predicted_y)))
 
 if __name__ == "__main__":
     main()
