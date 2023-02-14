@@ -1,40 +1,48 @@
-import uproot
-import pandas
+import pandas as pd
 import numpy as np
 import logging
-import awkward
 from sklearn.feature_selection import mutual_info_classif
+from sklearn.feature_selection import VarianceThreshold
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def make_mi_scores(X, y, discrete_features):
+    mi_scores = mutual_info_classif(X, y, discrete_features=discrete_features)
+    mi_scores = pd.Series(mi_scores, name="MI Scores", index=X.columns)
+    mi_scores = mi_scores.sort_values(ascending=False)
+    return mi_scores
+
 def main():
     file_location = "/home/daw/Documents/Physics/Particle phys/Higgs Project/"
 
-    file_name = {'lepton0': "0leptons.root",
-                'lepton1': "1lepton.root",
-                'lepton2': "2leptons.root"}
     channels = ['lepton2']
 
     for channel in channels:
-        logger.info('Opening' + file_name[channel])
-        branches = uproot.open(file_location + file_name[channel] + ':Nominal')
-        logger.info('Opening finished')
+        logger.info('Opening')
 
-        keys = branches.keys()
-        logger.info("Converting to pandas dataframe")
-        keys.remove("ZPV")
-        df = awkward.to_dataframe(branches.arrays(keys))
-        logger.info("Converting finished")
 
-        df = df.loc[(df["Sample"] == "qqZllH125")|(df["Sample"] == "ggZllH125")|(df["Sample"] == "ggZllH125cc")|(df["Sample"] == "qqZllH125cc")]
+        df = pd.read_pickle("lepton2whole_qq_gg")
+        logger.info("Opening finished")
+        print(df.head())
+        selection = VarianceThreshold()
+        df = selection.fit_transform(df)
+        logger.info("Transformation finished")
+        print(df.head())
+
+
         df['is_ggZH'] = np.logical_or(df["Sample"] == "ggZllH125", df["Sample"] == "ggZllH125cc")
         logger.info("Selection made")
-        selected_keys = keys
-        selected_keys.remove("Sample")
         print(channel + " data frame\n",df.head())
         logger.info("Mutual_information")
-        print(mutual_info_classif(df[selected_keys],df.is_ggZH))
+        keys = df.columns.values
+        keys.remove("Sample")
+        keys.remove("is_ggZH")
+        discrete_features = df[keys].dtypes == int
+        mi_score = make_mi_scores(df[keys], df['is_ggZH'], discrete_features)
+        logger.info("Pickling")
+        mi_score.to_pickle("MIscore.pcl")
+        print(mi_score)
 
 if __name__ == "__main__":
     main()
