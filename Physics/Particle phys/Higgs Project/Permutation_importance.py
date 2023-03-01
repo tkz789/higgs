@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     logger.info("Opening file")
-    model = load("first_model_boosted.joblib")
+    model = load("model_with_abs_theta_boosted.joblib")
     # channels = ["lepton0", "lepton2"]
     channel = "lepton2"
     sample_name = {"lepton0": "sample", "lepton2": "Sample"}
@@ -29,7 +29,7 @@ def main():
     logger.info('Opening finished')
 
     variables_of_interest = ["pTVH", "pTV", "ptL1", "ptL2", 'pTBBJ', 'pTBB', 'nJets', 'HT', "GSCMvh", "etaL1", "dRBB",
-                             "dPhiLL", "dPhiBB", "dEtaVBB"]
+                             "dPhiLL", "dPhiBB", "dEtaVBB", "absdPhiBB"]
 
     y = df.is_ggZH
     X = df[variables_of_interest]
@@ -40,7 +40,6 @@ def main():
     r = permutation_importance(model, val_X, val_y, sample_weight=val_weights, n_repeats=30, random_state=0)
     for i in r.importances_mean.argsort()[::-1]:
         print(variables_of_interest[i], i, r.importances_mean[i], r.importances_std[i])
-    plt.show()
 
 
 if __name__ == "__main__":
