@@ -1,9 +1,9 @@
 import pandas as pd
-import uproot
 import logging
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, PrecisionRecallDisplay, \
     RocCurveDisplay
 from joblib import dump, load
@@ -28,8 +28,8 @@ def main():
     sample_name = {"lepton0": "sample", "lepton2": "Sample"}
     keywords_qq = {"lepton0": "qqZvvH125", "lepton2": "qqZllH125"}
     keywords_gg = {"lepton0": "ggZvvH125", "lepton2": "ggZllH125"}
-    file_name = {"lepton0":"",
-                 "lepton2":"lepton2VOI_preprocessed.pkl"}
+    file_name = {"lepton0": "lepton0whole_qq_gg.pkl_preprocessed.pkl",
+                 "lepton2": "lepton2VOI_preprocessed.pkl"}
 
     # dataframe_path = "/home/daw/Documents/Physics/Particle phys/Higgs Project/"
 
@@ -37,8 +37,17 @@ def main():
     df = pd.read_pickle(file_name[channel])
     logger.info('Opening finished')
 
-    variables_of_interest = ["pTVH", "pTV", "ptL1", "ptL2", 'pTBBJ', 'pTBB', 'nJets', 'HT', "GSCMvh", "etaL1", "dRBB",
-                             "dPhiLL", "dPhiBB", "dEtaVBB", "absdPhiBB"]
+    variables_of_interest = []
+
+    if channel == "lepton2":
+        variables_of_interest = ["pTVH", "pTV", "ptL1", "ptL2", 'pTBBJ', 'pTBB', 'nJets', 'HT', "GSCMvh", "etaL1",
+                                 "dRBB",
+                                 "dPhiLL", "dPhiBB", "dEtaVBB", "absdPhiBB"]
+    elif channel == "lepton0":
+        variables_of_interest = ["dEtaBB", "dEtaVBB", "dPhiBB", "dPhiVBB", "dRBB", "etaB1", "etaB2", "etaJ3", "mBBJ",
+                                 "MEff", "MET", "mJ3", "nForwardJet", "nJ", "pTB1", 'pTB2', "pTJ3", "pTV"]
+    else:
+        logger.error("Wrong name")
 
     y = df.is_ggZH
     X = df[variables_of_interest]
@@ -49,10 +58,12 @@ def main():
     for estimators in [1]:
         logger.info("Model for max_depth=" + str(estimators))
         # class_weight='balanced', scoring='average_precision'
-        gg_vs_qq_model = HistGradientBoostingClassifier(random_state=1, early_stopping=True, learning_rate=0.1,
-                                                        scoring='balanced_accuracy')
+        # gg_vs_qq_model = HistGradientBoostingClassifier(random_state=1, early_stopping=True, learning_rate=0.1,
+        # scoring='balanced_accuracy')
+
+        gg_vs_qq_model = GaussianNB()
         gg_vs_qq_model.fit(train_X, train_y, train_weights)
-        dump(gg_vs_qq_model, "model_with_abs_theta_boosted.joblib")
+        dump(gg_vs_qq_model, channel + "_Gaussian.joblib")
 
         predicted_y = gg_vs_qq_model.predict(val_X)
         print(predicted_y.size)
@@ -62,7 +73,7 @@ def main():
         print(confusion_matrix(val_y, predicted_y, sample_weight=val_weights))
         print("precision", precision_score(val_y, predicted_y, sample_weight=val_weights))
 
-        y_score = gg_vs_qq_model.decision_function(val_X)
+        # y_score = gg_vs_qq_model.decision_function(val_X)
         display = PrecisionRecallDisplay.from_estimator(gg_vs_qq_model, val_X, val_y, name="ggZH",
                                                         sample_weight=val_weights, pos_label=True)
         display2 = PrecisionRecallDisplay.from_estimator(gg_vs_qq_model, val_X, val_y, name="qqZH",

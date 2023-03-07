@@ -13,7 +13,7 @@ def main():
     channel = "lepton0"
     file_name = {"lepton0": "lepton0whole_qq_gg.pkl", "lepton2": "lepton2whole_qq_gg.pkl"}
     sample = {'lepton0': 'sample', 'lepton2': 'Sample'}
-    sample_names = {"lepton0": ["qqZllH125", "ggZllH125", "ggZllH125cc", "qqZllH125cc"],
+    sample_names = {"lepton0": ["qqZvvH125", "ggZvvH125", "ggZvvH125cc", "qqZvvH125cc"],
                     "lepton2": ["qqZllH125", "ggZllH125", "ggZllH125cc", "qqZllH125cc"]}
 
     df = pd.read_pickle(file_name[channel])
@@ -22,7 +22,11 @@ def main():
                 (df[sample[channel]] == sample_names[channel][1]) |
                 (df[sample[channel]] == sample_names[channel][2]) |
                 (df[sample[channel]] == sample_names[channel][3])]
-    df['is_ggZH'] = np.logical_or(df[sample[channel]] == "ggZllH125", df[sample[channel]] == "ggZllH125cc")
+    if channel == "lepton2":
+        df['is_ggZH'] = np.logical_or(df[sample[channel]] == "ggZllH125", df[sample[channel]] == "ggZllH125cc")
+    elif channel == "lepton0":
+        df['is_ggZH'] = np.logical_or(df[sample[channel]] == "ggZvvH125", df[sample[channel]] == "ggZvvH125cc")
+
     df["absdPhiBB"] = np.abs(df["dPhiBB"])
     print(df)
 

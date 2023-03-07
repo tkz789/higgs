@@ -22,12 +22,12 @@ def main():
     logger.info("Opening file")
 
     # channels = ["lepton0", "lepton2"]
-    channel = "lepton2"
+    channel = "lepton0"
     sample_name = {"lepton0": "sample", "lepton2": "Sample"}
     keywords_qq = {"lepton0": "qqZvvH125", "lepton2": "qqZllH125"}
     keywords_gg = {"lepton0": "ggZvvH125", "lepton2": "ggZllH125"}
-    file_name = {"lepton0":"",
-                 "lepton2":"lepton2VOI_preprocessed.pkl"}
+    file_name = {"lepton0": "lepton0whole_qq_gg.pkl_preprocessed.pkl",
+                 "lepton2": "lepton2VOI_preprocessed.pkl"}
 
     # dataframe_path = "/home/daw/Documents/Physics/Particle phys/Higgs Project/"
 

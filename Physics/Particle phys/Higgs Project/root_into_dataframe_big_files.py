@@ -13,7 +13,7 @@ def main():
                  'lepton1': "1lepton.root",
                  'lepton2': "2leptons.root"}
     sample = {'lepton0': 'sample', 'lepton2': 'Sample'}
-    sample_names = {"lepton0": ["qqZllH125", "ggZllH125", "ggZllH125cc", "qqZllH125cc"],
+    sample_names = {"lepton0": ["qqZvvH125", "ggZvvH125", "ggZvvH125cc", "qqZvvH125cc"],
                     "lepton2": ["qqZllH125", "ggZllH125", "ggZllH125cc", "qqZllH125cc"]}
     channels = ['lepton0']
     for channel in channels:
