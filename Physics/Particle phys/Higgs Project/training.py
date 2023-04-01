@@ -22,7 +22,7 @@ def main():
     logger.info("Opening file")
 
     # channels = ["lepton0", "lepton2"]
-    channel = "lepton0"
+    channel = "lepton2"
     sample_name = {"lepton0": "sample", "lepton2": "Sample"}
     keywords_qq = {"lepton0": "qqZvvH125", "lepton2": "qqZllH125"}
     keywords_gg = {"lepton0": "ggZvvH125", "lepton2": "ggZllH125"}
@@ -35,17 +35,19 @@ def main():
     df = pd.read_pickle(file_name[channel])
     logger.info('Opening finished')
 
-    variables_of_interest = ["pTVH","pTV","ptL1","ptL2",'pTBBJ', 'pTBB', 'nJets','HT',"GSCMvh","etaL1","dRBB", "dPhiLL", "dPhiBB", "dEtaVBB"]
+    variables_of_interest = ["pTVH", "pTV", "ptL1", "ptL2", 'pTBBJ', 'pTBB', 'nJets', 'HT', "GSCMvh", "etaL1", "dRBB",
+                             "dPhiLL", "dPhiBB", "dEtaVBB",
+                             "absdPhiBB"]
 
     y = df.is_ggZH
     X = df[variables_of_interest]
     weights = df.EventWeight
 
-    train_X, val_X, train_y, val_y, train_weights, val_weights = train_test_split(X, y,weights, random_state=1)
+    train_X, val_X, train_y, val_y, train_weights, val_weights = train_test_split(X, y, weights, random_state=1)
 
-    for depth in [2,30]:
-        logger.info("Model for max_depth=" +str(depth) )
-        gg_vs_qq_model = DecisionTreeClassifier(random_state=1,  max_leaf_nodes=depth)
+    for depth in [2, 30]:
+        logger.info("Model for max_depth=" + str(depth))
+        gg_vs_qq_model = DecisionTreeClassifier(random_state=1, max_leaf_nodes=depth)
         gg_vs_qq_model.fit(train_X,train_y, train_weights)
         dump(gg_vs_qq_model,"first_model.joblib")
 

@@ -4,8 +4,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, PrecisionRecallDisplay, \
-    RocCurveDisplay
+from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, PrecisionRecallDisplay
 from joblib import dump, load
 import matplotlib.pyplot as plt
 
@@ -29,7 +28,7 @@ def main():
     keywords_qq = {"lepton0": "qqZvvH125", "lepton2": "qqZllH125"}
     keywords_gg = {"lepton0": "ggZvvH125", "lepton2": "ggZllH125"}
     file_name = {"lepton0": "lepton0whole_qq_gg.pkl_preprocessed.pkl",
-                 "lepton2": "lepton2VOI_preprocessed.pkl"}
+                 "lepton2": "lepton2whole_qq_gg.pkl_preprocessed.pkl"}
 
     # dataframe_path = "/home/daw/Documents/Physics/Particle phys/Higgs Project/"
 
@@ -53,17 +52,17 @@ def main():
     X = df[variables_of_interest]
     weights = df.EventWeight
 
-    train_X, val_X, train_y, val_y, train_weights, val_weights = train_test_split(X, y,weights, random_state=1)
+    train_X, val_X, train_y, val_y, train_weights, val_weights = train_test_split(X, y, weights, random_state=1)
 
     for estimators in [1]:
         logger.info("Model for max_depth=" + str(estimators))
         # class_weight='balanced', scoring='average_precision'
-        # gg_vs_qq_model = HistGradientBoostingClassifier(random_state=1, early_stopping=True, learning_rate=0.1,
-        # scoring='balanced_accuracy')
+        gg_vs_qq_model = HistGradientBoostingClassifier(random_state=1, early_stopping=True, learning_rate=0.1,
+                                                        scoring='f1')
 
-        gg_vs_qq_model = GaussianNB()
+        # gg_vs_qq_model = GaussianNB()
         gg_vs_qq_model.fit(train_X, train_y, train_weights)
-        dump(gg_vs_qq_model, channel + "_Gaussian.joblib")
+        dump(gg_vs_qq_model, channel + "_Boosted-f1.joblib")
 
         predicted_y = gg_vs_qq_model.predict(val_X)
         print(predicted_y.size)
@@ -80,7 +79,6 @@ def main():
                                                          sample_weight=val_weights, pos_label=False)
         display.plot()
         display2.plot(ax=plt.gca())
-        # RocCurveDisplay.from_estimator(gg_vs_qq_model,val_X,val_y,sample_weight=val_weights)
 
         plt.xlabel("Recall")
         plt.ylabel("Precision")
