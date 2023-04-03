@@ -10,6 +10,25 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def precision_threshold(y_score, val_y, val_weights):
+    ggzh = []
+    qqzh = []
+    threshold_values = np.linspace(0, 1, 100)
+    for i in threshold_values:
+        threshold = np.ones(int(y_score.size / 2)) * i
+        ggzh.append(precision_score(val_y, np.greater(y_score[:, 1], threshold), sample_weight=val_weights))
+        qqzh.append(
+            precision_score(np.logical_not(val_y), np.greater(y_score[:, 0], threshold), sample_weight=val_weights))
+
+    plt.plot(threshold_values, ggzh, label='ggZH')
+    plt.plot(threshold_values, qqzh, label='qqZH')
+    plt.legend()
+    plt.xlabel("Threshold")
+    plt.ylabel("Precision")
+    plt.show()
+    plt.close()
+
+
 def main():
     logger.info("Opening model_boosted")
     model_boosted = load("model_with_abs_theta_boosted.joblib")
@@ -47,22 +66,8 @@ def main():
                                                                                                         random_state=1)
     y_score = model_boosted.predict_proba(val_X)
 
-    ggzh = []
-    qqzh = []
-    threshold_values = np.linspace(0, 1, 100)
-    for i in threshold_values:
-        threshold = np.ones(int(y_score.size / 2)) * i
-        ggzh.append(precision_score(val_y, np.greater(y_score[:, 1], threshold), sample_weight=val_weights))
-        qqzh.append(
-            precision_score(np.logical_not(val_y), np.greater(y_score[:, 0], threshold), sample_weight=val_weights))
+    precision_threshold(y_score, val_y, val_weights)
 
-    plt.plot(threshold_values, ggzh, label='ggZH')
-    plt.plot(threshold_values, qqzh, label='qqZH')
-    plt.legend()
-    plt.xlabel("Threshold")
-    plt.ylabel("Precision")
-    plt.show()
-    plt.close()
     fpr, tpr, thresh = roc_curve(val_y, y_score[:, 1], pos_label=True, sample_weight=val_weights)
     fpr_tree, tpr_tree, thresh2 = roc_curve(val_y, model_tree.predict_proba(val_X)[:, 1], sample_weight=val_weights)
 

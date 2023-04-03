@@ -29,7 +29,7 @@ def main():
                     (df[sample[channel]] == sample_names[channel][2]) |
                     (df[sample[channel]] == sample_names[channel][3])]
 
-        # Convestion of all other samples for qqZH processes
+        # Conversion of all other samples for qqZH processes
         for key in branches.keys():
             if branches.typenames()[key] in ["int32_t", "float"]:
                 logger.info("Converting" + key)
