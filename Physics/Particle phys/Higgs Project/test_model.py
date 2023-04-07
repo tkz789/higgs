@@ -1,9 +1,9 @@
-from joblib import dump, load
+from joblib import load
 import logging
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-from sklearn.metrics import precision_score, roc_curve
+from sklearn.metrics import precision_score, roc_curve, precision_recall_curve
 import numpy as np
 
 logging.basicConfig(level=logging.INFO)
@@ -25,16 +25,50 @@ def precision_threshold(y_score, val_y, val_weights):
     plt.legend()
     plt.xlabel("Threshold")
     plt.ylabel("Precision")
+    plt.title("Boosted Decision Tree for the channel with no leptons")
+    plt.show()
+    plt.close()
+
+
+def roc_plot(y_score, val_y, y_score_tree, val_weights):
+    fpr, tpr, thresh = roc_curve(val_y, y_score[:, 1], pos_label=True, sample_weight=val_weights)
+    fpr_tree, tpr_tree, thresh2 = roc_curve(val_y, y_score_tree[:, 1], sample_weight=val_weights)
+
+    # roc curve for tpr = fpr
+    random_probs = [False for i in range(len(val_y))]
+    p_fpr, p_tpr, _ = roc_curve(val_y, random_probs, pos_label=True)
+    plt.plot(fpr, tpr, label="Boosted Decision Tree")
+    plt.plot(fpr_tree, tpr_tree, label="Decision tree")
+    plt.plot(p_fpr, p_tpr, label="random")
+    plt.ylabel("Recall or True Positive Rate")
+    plt.xlabel("False positive rate")
+    plt.title("ROC curve")
+    plt.legend()
+    plt.show()
+    plt.close()
+
+
+def precision_recall_plot(val_y, y_score_boosted, y_score_tree, val_weights):
+    prec_boosted, recall_boosted, _ = precision_recall_curve(val_y, y_score_boosted[:, 1], sample_weight=val_weights)
+    plt.plot(recall_boosted, prec_boosted, label="Boosted Decision Tree")
+
+    prec_tree, recall_tree, _ = precision_recall_curve(val_y, y_score_tree[:, 1], sample_weight=val_weights)
+    plt.plot(recall_tree, prec_tree, label="Decision Tree")
+
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.title("Precision-Recall curves for the channel with no leptons")
+    plt.legend()
     plt.show()
     plt.close()
 
 
 def main():
     logger.info("Opening model_boosted")
-    model_boosted = load("model_with_abs_theta_boosted.joblib")
-    model_tree = load("first_model.joblib")
+    model_boosted = load("lepton0_Boosted-f1.joblib")
+    model_tree = load("first_model_lepton0.joblib")
     # channels = ["lepton0", "lepton2"]
-    channel = "lepton2"
+    channel = "lepton0"
     sample_name = {"lepton0": "sample", "lepton2": "Sample"}
     keywords_qq = {"lepton0": "qqZvvH125", "lepton2": "qqZllH125"}
     keywords_gg = {"lepton0": "ggZvvH125", "lepton2": "ggZllH125"}
@@ -65,23 +99,14 @@ def main():
                                                                                                         mass,
                                                                                                         random_state=1)
     y_score = model_boosted.predict_proba(val_X)
+    y_score_tree = model_tree.predict_proba(val_X)
+    logger.info("All parameters created")
 
-    precision_threshold(y_score, val_y, val_weights)
+    # precision_threshold(y_score, val_y, val_weights)
 
-    fpr, tpr, thresh = roc_curve(val_y, y_score[:, 1], pos_label=True, sample_weight=val_weights)
-    fpr_tree, tpr_tree, thresh2 = roc_curve(val_y, model_tree.predict_proba(val_X)[:, 1], sample_weight=val_weights)
+    roc_plot(y_score, val_y, y_score_tree, val_weights)
 
-    # roc curve for tpr = fpr
-    random_probs = [False for i in range(len(val_y))]
-    p_fpr, p_tpr, _ = roc_curve(val_y, random_probs, pos_label=True, )
-    plt.plot(fpr, tpr, label="Boosted Decision Tree")
-    plt.plot(fpr_tree, tpr_tree, label="Decision tree")
-    plt.plot(p_fpr, p_tpr, label="random")
-    plt.ylabel("Recall or True Positive Rate")
-    plt.xlabel("False positive rate")
-    plt.legend()
-    plt.show()
-    plt.close()
+    precision_recall_plot(val_y, y_score, y_score_tree, val_weights)
 
     #   Histograms of higgs mass
     print(y_score)
@@ -95,10 +120,14 @@ def main():
     plt.hist([mass_qqZH, mass_ggZH], weights=[weights_qqZH, weights_ggZH], label=["qqZH", "ggZH"], bins=100,
              range=[0, 300])
     plt.legend()
+    plt.xlabel("mBB")
+    plt.title("Relative amplitude of the separated signals")
     plt.show()
     plt.close()
     plt.hist([mass_qqZH, mass_ggZH], weights=[weights_qqZH, weights_ggZH], label=["qqZH", "ggZH"], bins=100,
              density=True, range=[0, 300])
+    plt.title("Separated signals normalised to the same area")
+    plt.xlabel("mBB")
     plt.legend()
     plt.show()
     plt.close()
@@ -107,15 +136,16 @@ def main():
     qqzh = []
     for i in range(1, 12):
         threshold = np.ones(int(y_score.size / 2)) * i
-        ggzh.append(precision_score(val_y, np.greater_equal(val_X.nJets, threshold), sample_weight=val_weights))
+        ggzh.append(precision_score(val_y, np.greater_equal(val_X.nJ, threshold), sample_weight=val_weights))
         qqzh.append(
-            precision_score(np.logical_not(val_y), np.less(val_X.nJets, threshold), sample_weight=val_weights))
+            precision_score(np.logical_not(val_y), np.less(val_X.nJ, threshold), sample_weight=val_weights))
 
     plt.plot(np.linspace(1, 12, 11), ggzh, label='ggZH')
     plt.plot(np.linspace(1, 12, 11), qqzh, label='qqZH')
     plt.legend()
-    plt.xlabel("Threshold")
+    plt.xlabel("Number of Jets")
     plt.ylabel("Precision")
+    plt.title("Precision obtained as a function of a single split on the number of jets")
     plt.show()
     plt.close()
 
